@@ -67,17 +67,24 @@ function histogram(image, count) {
 }
 
 function offsetToKey(img, offset) {
-  return img.data[offset + 0] << 24 +
-         img.data[offset + 1] << 16 +
-         img.data[offset + 2] << 8 +
-         img.data[offset + 3];
+  var r = img.data[offset + 0] & 0xff;
+  var g = img.data[offset + 1] & 0xff;
+  var b = img.data[offset + 2] & 0xff;
+  var a = img.data[offset + 3] & 0xff;
+
+  var key = r << 24 | g << 16 | b << 8 | a;
+
+  // if (offset % 10000 == 0) {
+  //   console.log(key,":",r,g,b,a," -> ",keyToColor(key));
+  // }
+  return key;
 }
 
 function keyToColor(key) {
-  var r = (key && 0xFF000000) >> 24;
-  var g = (key && 0x00FF0000) >> 16;
-  var b = (key && 0x0000FF00) >> 8;
-  var a = (key && 0x000000FF);
+  var r = (key & 0xFF000000) >>> 24;
+  var g = (key & 0x00FF0000) >>> 16;
+  var b = (key & 0x0000FF00) >>> 8;
+  var a = (key & 0x000000FF);
   return [r,g,b,a];
 }
 
@@ -101,23 +108,24 @@ Bluttr.addTo([
       // }
 
       var destSize = img2.width * img2.height;
-      var step = destSize / len;
+      var step = img2.width / len;
 
       doPixels(img2, function(img, x, y, offset) {
-        var k = keys[offset / 4];
+        var index = Math.floor(x / step);
+        var k = keys[index];
         var color = keyToColor(k);
 
-        if (x == 0 && y % 100 == 0) {
-          //console.log("point " + x + "," + y + " color " + color);
+        // if (x == 0 && y % 100 == 0) {
+        //   console.log("point " + x + "," + y + " color " + color);
+        // }
+
+        if (x % 100 == 0 && y == 1) {
+          console.log("point " + x + "," + y + " step " + step + " index " + index + " color " + color);
         }
 
         for (var i = 0 ; i < 4 ; i++) {
           img2.data[offset + i] = color[i];
         }
-        // img2.data[offset + 0] = 255;
-        // img2.data[offset + 1] = 0;
-        // img2.data[offset + 2] = 64;
-        // img2.data[offset + 3] = 128;
       });
 
       return img2;
