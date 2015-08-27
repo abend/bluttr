@@ -78,7 +78,72 @@ function getColorOS(img, oset) {
           img.data[oset + 3]];
 }
 
+function toCSSColor(c) {
+  return 'rgba(' + c.join(',') + ')';
+}
+
 
+
+Bluttr.addTo([
+  {
+    name: 'amptogram',
+    weight: 10,
+    f: function(img1, img2) {
+      var histo = histogram(img1);
+      var keys = Object.keys(histo);
+      var keycount = keys.length;
+      keys.sort(function(a, b) {return a - b;});
+
+      //console.log(histo);
+
+      // fill bg with most common color
+      var mostpop = keys[0];
+      for (var i = 1; i < keycount; i++) {
+        var ky = keys[i];
+        if (histo[ky] > histo[mostpop]) {
+          mostpop = ky;
+        }
+      }
+
+      //console.log("most pop color: " + mostpop + ": " + histo[mostpop] + ": " + keyToColor(mostpop));
+
+			var ctx = Bluttr.dataToContext(img1);
+      ctx.beginPath();
+      ctx.rect(0, 0, img1.width, img1.height);
+      ctx.fillStyle = toCSSColor(keyToColor(mostpop));
+      ctx.fill();
+
+      var step = img1.width / (keycount - 1);
+      console.log("step is " + step);
+      var pixcount = img1.width * img1.height;
+      var vscale = img1.height / Math.log(pixcount);
+
+      var w = Math.ceil(step);
+      var mid = img1.height / 2;
+
+      for (var j = 1; j < keycount; j++) {
+        var k = keys[j];
+        var color = keyToColor(k);
+        var mag = histo[k];
+
+        var x = Math.floor((j - 1) * step);
+        var h = Math.floor(Math.log(mag) * vscale);
+
+        ctx.beginPath();
+        ctx.rect(x, mid, w, -h/2);
+        ctx.fillStyle = toCSSColor(color);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.rect(x, mid, w, h/2);
+        ctx.fillStyle = toCSSColor(color);
+        ctx.fill();
+      }
+
+			return ctx.getImageData(0, 0, img1.width, img1.height);
+    }
+  }
+]);
 
 Bluttr.addTo([
   {
@@ -135,9 +200,6 @@ Bluttr.addTo([
       var keycount = keys.length;
 
       keys.sort(function(a, b) {return a - b;});
-
-      console.log(keys);
-      console.log(histo);
 
       var x = 0;
       var y = 0;
