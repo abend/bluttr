@@ -20,7 +20,7 @@ var Bluttr = {
 	},
 
 	//can add a single object, or array of objects
-	addTo: function(objs) { 
+	addTo: function(objs) {
 		if (Array.isArray(objs)) {
 			for (var i = 0 ; i < objs.length ; i++) {
 				this._mungePush(objs[i]);
@@ -105,7 +105,8 @@ var Bluttr = {
 
 	//meant to find functions and apply them
 	mix: function(imgd1, imgd2, callback) {
-		var i = Bluttr.getMungeIndex();
+		//var i = Bluttr.getMungeIndex();
+    var i = intindex++;
 		console.info('applying %s [rnd=%d]', Bluttr.munge[i].name, i);
 		//we can handle straight up return value or callback
 		var rtn = Bluttr.munge[i].f(imgd1, imgd2, callback);
@@ -116,6 +117,7 @@ var Bluttr = {
 
 };
 
+var intindex = 0;
 
 
 //my own sort of playground of testing out functions.  these are decidedly not art. or are they?
@@ -175,5 +177,3 @@ Bluttr.addTo([
 		name: 'circly'
 	},
 ]);
-
-
