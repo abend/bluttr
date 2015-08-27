@@ -1,3 +1,7 @@
+function offset(img, x, y) {
+  return 4 * (y * img.width + x);
+}
+
 // function linearWrapIndex(img, x, y) {
 //   var w = img.width;
 //   var h = img.height;
@@ -20,39 +24,16 @@ function imgBufSize(img) {
 function doPixels(img, func) {
   for (var y = 0; y < img.height; y++) {
     for (var x = 0; x < img.width; x++) {
-      var offset = 4 * (y * img.width + x);
-      func(img, x, y, offset);
+      func(img, x, y);
     }
   }
 }
 
-// Bluttr.addTo([
-//   {
-//     name: 'lumshift',
-//     weight: 10,
-//     f: function(img1, img2) {
-//       var bufSize = imgBufSize(img1);
-
-//       doPixels(img1, function(img, x, y, offset) {
-//         var lum = luminance(img, offset);
-//         var newoffset = (offset + lum) % bufSize;
-//         if (x == 0 && y % 100 == 0) { console.log(lum + " shifting " + x + "," + y + " (offset " + offset + ") by " + (newoffset - offset)); }
-//         for (var i = 0 ; i < 4 ; i++) {
-//           img1.data[offset + i] = img2.data[newoffset + i];
-//         }
-//       });
-
-//       return img1;
-//     }
-//   }
-
-// ]);
-
 function histogram(image, count) {
   var histo = {};
 
-  doPixels(image, function(img, x, y, offset) {
-    var key = offsetToKey(img, offset);
+  doPixels(image, function(img, x, y) {
+    var key = offsetToKey(img, offset(img, x, y));
     if (key in histo) {
       histo[key] += 1;
     } else {
@@ -79,14 +60,46 @@ function keyToColor(key) {
   return [r,g,b,a];
 }
 
-function setColor(img, x, y, color) {
-  var offset = 4 * (y * img.width + x);
+function setColor(img, x, y, colr) {
+  var oset = offset(img, x, y);
   for (var i = 0 ; i < 4 ; i++) {
-    img.data[offset + i] = color[i];
+    img.data[oset + i] = colr[i];
   }
 }
 
-/*
+function getColor(img, x, y) {
+  return getColorOS(img, offset(img, x, y));
+}
+
+function getColorOS(img, oset) {
+  return [img.data[oset + 0],
+          img.data[oset + 1],
+          img.data[oset + 2],
+          img.data[oset + 3]];
+}
+
+
+
+Bluttr.addTo([
+  {
+    name: 'lumshift',
+    weight: 10,
+    f: function(img1, img2) {
+      var bufSize = imgBufSize(img1);
+
+      doPixels(img1, function(img, x, y) {
+        var oset = offset(img, x, y);
+        var lum = luminance(img, oset);
+        var newoffset = (oset + lum) % bufSize;
+        //if (x == 0 && y % 100 == 0) { console.log("shifting " + x + "," + y + " by " + lum); }
+        setColor(img1, x, y, getColorOS(img2, newoffset));
+      });
+
+      return img1;
+    }
+  }
+]);
+
 Bluttr.addTo([
   {
     name: 'colorspread',
@@ -100,22 +113,18 @@ Bluttr.addTo([
 
       var step = img2.width / len;
 
-      doPixels(img2, function(img, x, y, offset) {
+      doPixels(img2, function(img, x, y) {
         var index = Math.floor(x / step);
         var k = keys[index];
         var color = keyToColor(k);
 
-        for (var i = 0 ; i < 4 ; i++) {
-          img2.data[offset + i] = color[i];
-        }
+        setColor(img2, x, y, color);
       });
 
       return img2;
     }
   }
-
 ]);
-*/
 
 Bluttr.addTo([
   {
@@ -154,7 +163,6 @@ Bluttr.addTo([
       return img1;
     }
   }
-
 ]);
 
 /*
