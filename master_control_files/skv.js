@@ -86,6 +86,75 @@ function toCSSColor(c) {
 
 Bluttr.addTo([
   {
+    name: 'spintogram',
+    weight: 10,
+    f: function(img1, img2) {
+      var histo = histogram(img1);
+      var keys = Object.keys(histo);
+      var keycount = keys.length;
+      keys.sort(function(a, b) {return a - b;});
+
+      // fill bg with most common color
+      var mostpop = keys[0];
+      for (var i = 1; i < keycount; i++) {
+        var ky = keys[i];
+        if (histo[ky] > histo[mostpop]) {
+          mostpop = ky;
+        }
+      }
+
+			var ctx = Bluttr.dataToContext(img1);
+      ctx.beginPath();
+      ctx.rect(0, 0, img1.width, img1.height);
+      ctx.fillStyle = toCSSColor(keyToColor(mostpop));
+      ctx.fill();
+
+      var step = 360 / (keycount - 1);
+      console.log("step is " + step);
+      var pixcount = img1.width * img1.height;
+      var vscale = 1.5 * img1.height / Math.log(pixcount);
+
+      var w = Math.ceil(step);
+      var xmid = img1.width / 2;
+      var ymid = img1.height / 2;
+
+      for (var j = 1; j < keycount; j++) {
+        var k = keys[j];
+        var color = keyToColor(k);
+        var mag = histo[k];
+
+        var r = Math.floor(Math.log(mag) * vscale);
+        var theta = j * step;
+
+        var x = Math.floor(r * Math.cos(theta));
+        var y = Math.floor(r * Math.sin(theta));
+
+        ctx.beginPath();
+        ctx.moveTo(xmid, ymid);
+        ctx.lineTo(xmid + x, ymid + y);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = toCSSColor(color);
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+
+      // maybe a circle cap
+      var docirc = Math.random();
+      if (docirc > .5) {
+        ctx.beginPath();
+        var circrad = Math.random() * img1.height / 3;
+        ctx.arc(xmid, ymid, circrad, 0, Math.PI * 2);
+        ctx.fillStyle = toCSSColor(keyToColor(mostpop));
+        ctx.fill();
+      }
+
+			return ctx.getImageData(0, 0, img1.width, img1.height);
+    }
+  }
+]);
+
+Bluttr.addTo([
+  {
     name: 'amptogram',
     weight: 10,
     f: function(img1, img2) {
