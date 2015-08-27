@@ -92,7 +92,11 @@ Bluttr.addTo([
       var histo = histogram(img1);
       var keys = Object.keys(histo);
       var keycount = keys.length;
-      keys.sort(function(a, b) {return a - b;});
+      if (Math.random() > .5) {
+        keys.sort(function(a, b) {return a - b;});
+      } else {
+        keys.sort(function(a, b) {return histo[a] - histo[b];});
+      }
 
       // fill bg with most common color
       var mostpop = keys[0];
@@ -132,7 +136,12 @@ Bluttr.addTo([
         ctx.beginPath();
         ctx.moveTo(xmid, ymid);
         ctx.lineTo(xmid + x, ymid + y);
-        ctx.lineWidth = 5;
+        if (Math.random() > .5) {
+          ctx.lineWidth = 1.5;
+        } else {
+          var magpct = mag / pixcount;
+          ctx.lineWidth = Math.max (1, magpct / 10);
+        }
         ctx.strokeStyle = toCSSColor(color);
         ctx.lineCap = 'round';
         ctx.stroke();
@@ -142,7 +151,7 @@ Bluttr.addTo([
       var docirc = Math.random();
       if (docirc > .5) {
         ctx.beginPath();
-        var circrad = Math.random() * img1.height / 3;
+        var circrad = Math.random() * img1.height / 4 + img1.height / 5;
         ctx.arc(xmid, ymid, circrad, 0, Math.PI * 2);
         ctx.fillStyle = toCSSColor(keyToColor(mostpop));
         ctx.fill();
