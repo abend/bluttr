@@ -89,9 +89,8 @@ Bluttr.addTo([
 
       doPixels(img1, function(img, x, y) {
         var oset = offset(img, x, y);
-        var lum = luminance(img, oset);
-        var newoffset = (oset + lum) % bufSize;
-        //if (x == 0 && y % 100 == 0) { console.log("shifting " + x + "," + y + " by " + lum); }
+        var lum = Math.floor(luminance(img, oset));
+        var newoffset = (oset + lum * 4) % bufSize;
         setColor(img1, x, y, getColorOS(img2, newoffset));
       });
 
