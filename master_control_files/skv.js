@@ -4,9 +4,6 @@
 //   return (x + (y * w)) % (w * h);
 // }
 
-// function luminanceXY(img, x, y) {
-//   luminance(img, 4 * (y * img.width + x));
-
 function luminance(img, offset) {
   var lum = 0;
   for (var i = 0 ; i < 3 ; i++) {
@@ -71,13 +68,7 @@ function offsetToKey(img, offset) {
   var g = img.data[offset + 1] & 0xff;
   var b = img.data[offset + 2] & 0xff;
   var a = img.data[offset + 3] & 0xff;
-
-  var key = r << 24 | g << 16 | b << 8 | a;
-
-  // if (offset % 10000 == 0) {
-  //   console.log(key,":",r,g,b,a," -> ",keyToColor(key));
-  // }
-  return key;
+  return r << 24 | g << 16 | b << 8 | a;
 }
 
 function keyToColor(key) {
@@ -90,22 +81,16 @@ function keyToColor(key) {
 
 Bluttr.addTo([
   {
-    name: 'histo',
-    weight: 10,
+    name: 'colorspread',
+    weight: 1,
     f: function(img1, img2) {
       var histo = histogram(img1);
       var keys = Object.keys(histo);
       var len = keys.length;
 
-      keys.sort();
+      keys.sort(function(a, b) {return a - b;});
 
-      console.log(len, histo);
-      
-      // for (var i = 0; i < len; i++) {
-      //   var k = keys[i];
-      //   var color = keyToColor(k);
-      //   var count = histo[k];
-      // }
+      //console.log(len, keys);
 
       var destSize = img2.width * img2.height;
       var step = img2.width / len;
@@ -119,9 +104,9 @@ Bluttr.addTo([
         //   console.log("point " + x + "," + y + " color " + color);
         // }
 
-        if (x % 100 == 0 && y == 1) {
-          console.log("point " + x + "," + y + " step " + step + " index " + index + " color " + color);
-        }
+        // if (x % 10 == 0 && y == 1) {
+        //   console.log("point " + x + "," + y + " step " + step + " index " + index + " color " + color);
+        // }
 
         for (var i = 0 ; i < 4 ; i++) {
           img2.data[offset + i] = color[i];
