@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<!--no-pagify-->
+<html>
+<head>
+<title>bluttr: Test Mine</title>
+
+
+<!-- this will load Bluttr object/library/thing -->
+<script src="b.js"></script>
+<script src="master_control_files/skv.js"></script>
+
+<script src="libs/CamanJS-4.1.1/dist/caman.full.js"></script>
+
+
+
+<script>
+
+var defaultScript = 'http://scribble.com/test/just_one.js';
+
+function loadScript(url, callback) {
+	Bluttr.munge = [];  //only do this for this testing script, not real production
+	var s = document.createElement('script');
+	s.type = 'text/javascript';
+	s.onload = function() {
+//console.info('script ' + url + ' loaded');
+		callback();
+	};
+	s.onerror = function(ev) {
+		console.warn(ev);
+		toggleMixUI(true);
+		alert('error loading ' + url + ' (likely 404, i think?)');
+	};
+	s.src = url;
+	document.getElementsByTagName('head')[0].appendChild(s);
+}
+
+
+
+function scriptButton() {
+	totalFunctionsLoaded = 0;
+	toggleMixUI(false);
+	var sres = document.getElementById('script-results');
+	var url = document.getElementById('script-url').value;
+	sres.innerHTML = '<b>loading</b> script from ' + url;
+	loadScript(url, function() {
+		sres.innerHTML += ' --- <b>finished</b> loading script ' + url + ' --- total functions loaded: <b>' + totalFunctionsLoaded + '</b>';
+		if (totalFunctionsLoaded < 1) {
+			alert('no functions loaded.  please make sure your script is calling Bluttr.add(....)');
+			return;
+		}
+		toggleMixUI(true);
+//console.log('ok!!!');
+	});
+}
+
+
+function toggleMixUI(mode) {
+	var b = document.getElementById('mix-button');
+	if (mode) {
+		b.disabled = false;
+	} else {
+		b.disabled = true;
+	}
+}
+
+var canvas1, ctx1, canvas2, ctx2, resultCanvas, resultCtx;
+
+var totalFunctionsLoaded = 0;
+window.addEventListener('bluttr:function:added', function(ev) {
+	var r = ' --- add new function <b>' + ev.bluttrFunction.name + '</b>';
+	if (ev.bluttrFunction.weight) r += ' (weight <b>' + ev.bluttrFunction.weight + '</b>)';
+	document.getElementById('script-results').innerHTML += r;
+	totalFunctionsLoaded++;
+});
+
+window.addEventListener('load', function() {
+
+    //document.getElementById('script-url').value = defaultScript;
+	//scriptButton();
+	
+	canvas1 = Bluttr.createCanvas();
+	canvas2 = Bluttr.createCanvas();
+	resultCanvas = Bluttr.createCanvas();
+	resultCtx = resultCanvas.getContext('2d');
+
+	ctx1 = canvas1.getContext('2d');
+	ctx1.fillStyle = 'green';
+	ctx1.fillRect(0, 0, canvas1.width, canvas1.height);
+
+	ctx2 = canvas2.getContext('2d');
+	ctx2.fillStyle = 'blue';
+	ctx2.fillRect(0, 0, canvas2.width, canvas2.height);
+
+	
+	document.getElementById('c1-wrapper').appendChild(canvas1);
+	document.getElementById('c2-wrapper').appendChild(canvas2);
+    document.getElementById('cres-wrapper').appendChild(resultCanvas);
+
+    mixTwo();
+});
+
+
+
+
+/*
+in this example, for each iteration, the result image is change, but then the source
+images are also changed, alternating between the two.
+*/
+
+var iterationCount = -1;
+var timer = null;
+function mixTwo(doActual) {
+	var sres = document.getElementById('script-results');
+	var iterations = document.getElementById('numtimes').value - 0;
+	if (!iterations || (iterations < 1)) iterations = 1;
+
+	//this crazy timeout stuff is cuz the actual mix code blocks dom changes and we dont see the initial message otherwise!
+	if (!doActual) {
+		toggleMixUI(false);
+		sres.innerHTML = 'now running <b>' + iterations + '</b> iteration(s)....';
+		window.setTimeout(function() { mixTwo(true);}, 500);
+		return;
+	}
+
+	iterationCount = iterations;
+	mixRaw();
+/*
+	for (var i = 0 ; i < iterations ; i++) {
+		console.log('mix iterations %d of %d', i+1, iterations);
+		out = Bluttr.mix(imgd1, imgd2);
+		if (i % 2 == 0) {
+			ctx1.putImageData(out, 0, 0);
+		} else {
+			ctx2.putImageData(out, 0, 0);
+		}
+	}
+	out = Bluttr.mix(imgd1, imgd2);
+	resultCtx.putImageData(out, 0, 0);
+*/
+	sres.innerHTML = '<b>' + iterations + '</b> iteration(s) completed.';
+	toggleMixUI(true);
+}
+
+
+function mixRaw(outd) {
+//console.log('mixRaw(icount=%d)', iterationCount);
+	if (iterationCount < 0) {
+		resultCtx.putImageData(outd, 0, 0);
+		clearInterval(timer);
+		//timer = null;
+		//document.getElementById('info').innerHTML = 'done';
+	} else {
+		if (outd) {
+			if (iterationCount % 2 == 0) {
+//console.info('setting ctx1');
+				ctx1.putImageData(outd, 0, 0);
+			} else {
+//console.info('setting ctx2');
+				ctx2.putImageData(outd, 0, 0);
+			}
+		}
+		iterationCount--;
+		var i1 = ctx1.getImageData(0, 0, canvas1.width, canvas1.height);
+		var i2 = ctx2.getImageData(0, 0, canvas2.width, canvas2.height);
+//console.warn('calling mix() at icount=%d', iterationCount);
+		Bluttr.mix(i1, i2, function(d) {
+			mixRaw(d);
+		});
+	}
+}
+
+		
+function m2() {
+	var imgd1 = ctx.getImageData(0, 0, canv.width, canv.height);
+	var imgd2 = ctx2.getImageData(0, 0, canv.width, canv.height);
+	var imgdOut = Bluttr.mix(imgd1, imgd2);
+	//var imgdOut = Bluttr.mix(imgd1, imgInData);
+	ctx.putImageData(imgdOut, 0, 0);
+}
+
+</script>
+
+<style>
+	body {
+		font-family: arial, sans;
+	}
+
+	canvas {
+		margin: 10px;
+		outline: solid 1px black;
+		width: 400px;
+	}
+
+	.cwrapper {
+		position: relative;
+		display: inline-block;
+	}
+	.cwrapper .info {
+		position: absolute;
+		bottom: 20px;
+		left: 20px;
+		color: #FFF;
+		background-color: rgba(0,0,0,0.3);
+		padding: 5px;
+		border-radius: 8px;
+	}
+
+	span#info {
+		margin-left: 30px;
+		font-size: 0.9em;
+		color: #888;
+	}
+
+	#script-url {
+		width: 80%;
+		font-size: 1.2em;
+	}
+
+	.command {
+		padding: 10px;
+		margin: 15px;
+		border: solid 2px #888;
+		border-radius: 10px;
+		background-color: #EFE;
+	}
+
+	#script-results {
+		padding: 10px;
+		font-size: 0.7em;
+		color: #888;
+		height: 1.3em;
+	}
+
+	#script-results b {
+		color: #000;
+	}
+
+ #topcrap { display: none; }
+</style>
+
+</head>
+
+<body>
+
+<div id="topcrap" class="command">
+	<p>
+		Simply paste the url of your script in here and click <b>load script</b> button.  Once the script has loaded into the page, click <b>mix it up</b> button to apply the function(s) you loaded.
+	</p>
+	<input id="script-url" onChange="scriptButton()" />
+	<input type="button" value="load script (by url)" onClick="scriptButton()" />
+	<div id="script-results"></div>
+</div>
+
+<div class="command">
+	<input type="button" id="mix-button" onClick="mixTwo();" value="mix it up" />
+	try applying some functions for <input id="numtimes" placeholder="number of iterations" style="width: 2em;" value="3" /> iterations
+	<span id="info"></span>
+</div>
+
+<div id="c1-wrapper" class="cwrapper"><div class="info">input canvas 1</div></div>
+<div id="c2-wrapper" class="cwrapper"><div class="info">input canvas 2</div></div>
+<div id="cres-wrapper" class="cwrapper"><div class="info">results</div></div>
+
+
+<div style="font-size: 0.8em; color: #888; padding: 20px;">
+	Note: javascript console will give more details on which functions are called, etc.
+	Where are those docs, again?  <a href="/synergy/bluttr/?details.md:Details">Right here!</a>
+</div>
+
+</body>
+</html>
