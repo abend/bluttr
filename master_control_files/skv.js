@@ -116,7 +116,7 @@ Bluttr.addTo([
       var step = 360 / (keycount - 1);
       console.log("step is " + step);
       var pixcount = img1.width * img1.height;
-      var vscale = 1.5 * img1.height / Math.log(pixcount);
+      var vscale = 1.1 * img1.height / Math.log(pixcount);
 
       var w = Math.ceil(step);
       var xmid = img1.width / 2;
@@ -137,10 +137,10 @@ Bluttr.addTo([
         ctx.moveTo(xmid, ymid);
         ctx.lineTo(xmid + x, ymid + y);
         if (Math.random() > .5) {
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = 1;
         } else {
           var magpct = mag / pixcount;
-          ctx.lineWidth = Math.max (1, magpct / 10);
+          ctx.lineWidth = Math.max (1, magpct / 5);
         }
         ctx.strokeStyle = toCSSColor(color);
         ctx.lineCap = 'round';
