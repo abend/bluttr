@@ -79,6 +79,14 @@ function keyToColor(key) {
   return [r,g,b,a];
 }
 
+function setColor(img, x, y, color) {
+  var offset = 4 * (y * img.width + x);
+  for (var i = 0 ; i < 4 ; i++) {
+    img.data[offset + i] = color[i];
+  }
+}
+
+/*
 Bluttr.addTo([
   {
     name: 'colorspread',
@@ -90,9 +98,6 @@ Bluttr.addTo([
 
       keys.sort(function(a, b) {return a - b;});
 
-      //console.log(len, keys);
-
-      var destSize = img2.width * img2.height;
       var step = img2.width / len;
 
       doPixels(img2, function(img, x, y, offset) {
@@ -100,20 +105,53 @@ Bluttr.addTo([
         var k = keys[index];
         var color = keyToColor(k);
 
-        // if (x == 0 && y % 100 == 0) {
-        //   console.log("point " + x + "," + y + " color " + color);
-        // }
-
-        // if (x % 10 == 0 && y == 1) {
-        //   console.log("point " + x + "," + y + " step " + step + " index " + index + " color " + color);
-        // }
-
         for (var i = 0 ; i < 4 ; i++) {
           img2.data[offset + i] = color[i];
         }
       });
 
       return img2;
+    }
+  }
+
+]);
+*/
+
+Bluttr.addTo([
+  {
+    name: 'sortpix',
+    weight: 1,
+    f: function(img1, img2) {
+      var histo = histogram(img1);
+      var keys = Object.keys(histo);
+      var keycount = keys.length;
+
+      keys.sort(function(a, b) {return a - b;});
+
+      console.log(keys);
+      console.log(histo);
+
+      var x = 0;
+      var y = 0;
+
+      var destSize = img1.width * img1.height;
+
+      for (var i = 0; i < keycount; i++) {
+        var k = keys[i];
+        var color = keyToColor(k);
+        var runlength = histo[k];
+        //console.log(x + "," + y + ": switch to color " + color + " for " + runlength);
+        for (var j = 0; j < runlength; j++) {
+          setColor(img1, x, y, color);
+          x++;
+          if (x > img1.width) {
+            x = 0;
+            y++;
+          }
+        }
+      }
+
+      return img1;
     }
   }
 
