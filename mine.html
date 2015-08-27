@@ -168,16 +168,15 @@ function mixRaw(outd) {
 		});
 	}
 }
-
 		
-function m2() {
-	var imgd1 = ctx.getImageData(0, 0, canv.width, canv.height);
-	var imgd2 = ctx2.getImageData(0, 0, canv.width, canv.height);
-	var imgdOut = Bluttr.mix(imgd1, imgd2);
-	//var imgdOut = Bluttr.mix(imgd1, imgInData);
-	ctx.putImageData(imgdOut, 0, 0);
-}
-
+// function m2() {
+// 	var imgd1 = ctx.getImageData(0, 0, canv.width, canv.height);
+// 	var imgd2 = ctx2.getImageData(0, 0, canv.width, canv.height);
+// 	var imgdOut = Bluttr.mix(imgd1, imgd2);
+// 	//var imgdOut = Bluttr.mix(imgd1, imgInData);
+// 	ctx.putImageData(imgdOut, 0, 0);
+// }
+// 
 </script>
 
 <style>
@@ -253,7 +252,7 @@ function m2() {
 
 <div class="command">
 	<input type="button" id="mix-button" onClick="mixTwo();" value="mix it up" />
-	try applying some functions for <input id="numtimes" placeholder="number of iterations" style="width: 2em;" value="3" /> iterations
+	try applying some functions for <input id="numtimes" placeholder="number of iterations" style="width: 2em;" value="1" /> iterations
 	<span id="info"></span>
 </div>
 
