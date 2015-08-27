@@ -162,6 +162,7 @@ Bluttr.addTo([
 	{
 		f: function(imgd) {
 			var ctx = Bluttr.dataToContext(imgd);
+      for (var i = 0; i < 50; ++i) {
 			ctx.beginPath();
 			var r = Math.random() * 20 + 10;
 			var cx = Math.random() * (imgd.width - r*2) + r;
@@ -171,7 +172,8 @@ Bluttr.addTo([
 			ctx.fillStyle = 'green';
 			ctx.fill();
 			ctx.lineWidth = 5;
-			ctx.stroke();
+			  ctx.stroke();
+      }
 			return ctx.getImageData(0, 0, imgd.width, imgd.height);
 		},
 		name: 'circly'
