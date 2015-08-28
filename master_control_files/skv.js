@@ -44,6 +44,8 @@ function histogram(image, count) {
   return histo;
 }
 
+var hsl = false;
+
 function offsetToKey(img, offset) {
   var r = img.data[offset + 0] & 0xff;
   var g = img.data[offset + 1] & 0xff;
@@ -53,14 +55,25 @@ function offsetToKey(img, offset) {
   var hsl = rgbToHsl(r, g, b);
 
   //return r << 24 | g << 16 | b << 8 | a;
-  return hsl[0] << 24 | hsl[1] << 16 | hsl[2] << 8 | a;
+  if (hsl) {
+    return hsl[0] << 24 | hsl[1] << 16 | hsl[2] << 8 | a;
+  } else {
+    return hsl[1] << 24 | hsl[0] << 16 | hsl[2] << 8 | a;
+  }
 }
 
 function keyToColor(key) {
   // (really hsl)
-  var r = (key & 0xFF000000) >>> 24;
-  var g = (key & 0x00FF0000) >>> 16;
-  var b = (key & 0x0000FF00) >>> 8;
+  var r,g,b;
+  if (!hsl) {
+    g = (key & 0xFF000000) >>> 24;
+    r = (key & 0x00FF0000) >>> 16;
+    b = (key & 0x0000FF00) >>> 8;
+  } else {
+    r = (key & 0xFF000000) >>> 24;
+    g = (key & 0x00FF0000) >>> 16;
+    b = (key & 0x0000FF00) >>> 8;
+  }
   var a = (key & 0x000000FF);
 
   var rgb = hslToRgb(r,g,b);
@@ -139,6 +152,13 @@ function toCSSColor(c) {
   return 'rgba(' + c.join(',') + ')';
 }
 
+function toDegrees (angle) {
+  return angle * (180 / Math.PI);
+}
+
+function toRadians (angle) {
+  return angle * (Math.PI / 180);
+}
 
 
 Bluttr.addTo([
@@ -185,7 +205,7 @@ Bluttr.addTo([
         var mag = histo[k];
 
         var r = Math.floor(Math.log(mag) * vscale);
-        var theta = j * step;
+        var theta = toRadians(j * step);
 
         var x = Math.floor(r * Math.cos(theta));
         var y = Math.floor(r * Math.sin(theta));
