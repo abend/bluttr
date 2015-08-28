@@ -58,7 +58,7 @@ function offsetToKey(img, offset) {
   if (hsl) {
     return hsl[0] << 24 | hsl[1] << 16 | hsl[2] << 8 | a;
   } else {
-    return hsl[1] << 24 | hsl[0] << 16 | hsl[2] << 8 | a;
+    return hsl[2] << 24 | hsl[1] << 16 | hsl[0] << 8 | a;
   }
 }
 
@@ -66,9 +66,9 @@ function keyToColor(key) {
   // (really hsl)
   var r,g,b;
   if (!hsl) {
-    g = (key & 0xFF000000) >>> 24;
-    r = (key & 0x00FF0000) >>> 16;
-    b = (key & 0x0000FF00) >>> 8;
+    b = (key & 0xFF000000) >>> 24;
+    g = (key & 0x00FF0000) >>> 16;
+    r = (key & 0x0000FF00) >>> 8;
   } else {
     r = (key & 0xFF000000) >>> 24;
     g = (key & 0x00FF0000) >>> 16;
